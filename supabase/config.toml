@@ -1,0 +1,12 @@
+# Configuración básica de Supabase
+project_id = "local-waas-platform"
+
+[api]
+port = 54321
+schemas = ["public"]
+
+[db]
+port = 54322
+
+[storage]
+enabled = true

@@ -1,0 +1,47 @@
+============================================================
+INSTRUCCIONES PARA CONFIGURAR SUPABASE (LocalWaaS Platform)
+============================================================
+
+COPIA Y PEGA ESTO EN EL "SQL EDITOR" DE SUPABASE Y DALE A "RUN":
+
+------------------------------------------------------------
+PASO 8: REPARACIÓN FINAL Y CREACIÓN DE SITIO (SIN ERRORES)
+------------------------------------------------------------
+
+-- 1. Reparar tablas agregando columnas necesarias
+ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS industry TEXT DEFAULT 'general';
+ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS theme_type TEXT DEFAULT 'futuristic';
+ALTER TABLE public.tenants ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+
+-- 2. LIMPIEZA TOTAL EN ORDEN (Evita errores de Foreign Key)
+DELETE FROM public.services;
+DELETE FROM public.user_profiles;
+DELETE FROM public.tenants WHERE custom_domain IN ('localhost:3000', 'localhost');
+
+-- 3. RECREAR NEGOCIO MAESTRO (Dominio limpio para Middleware)
+INSERT INTO public.tenants (id, name, custom_domain, theme_color, industry)
+VALUES (gen_random_uuid(), 'AGENCIA WEB PRO', 'localhost', '#3b82f6', 'barber');
+
+-- 4. VINCULAR ADMINISTRADOR (Asegúrate de que 'admin@test.com' exista)
+INSERT INTO public.user_profiles (id, tenant_id, full_name, role)
+SELECT 
+  id, 
+  (SELECT id FROM public.tenants WHERE custom_domain = 'localhost' LIMIT 1), 
+  'ADMIN MASTER', 
+  'admin'
+FROM auth.users
+WHERE email = 'admin@test.com'
+LIMIT 1;
+
+-- 5. INSERTAR SERVICIOS DE PRUEBA
+INSERT INTO public.services (tenant_id, name, description, price)
+SELECT id, 'CORTE DE PELO FUTURISTA', 'Estilo de alta gama con terminados láser.', 30.00
+FROM public.tenants WHERE custom_domain = 'localhost';
+
+INSERT INTO public.services (tenant_id, name, description, price)
+SELECT id, 'BARBA INDUSTRIAL', 'Perfilado con vapor y toalla caliente.', 20.00
+FROM public.tenants WHERE custom_domain = 'localhost';
+
+============================================================
+¡LISTO! Ahora refresca: http://localhost:3000
+============================================================

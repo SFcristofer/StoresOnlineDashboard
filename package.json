@@ -1,0 +1,26 @@
+{
+  "name": "local-waas-platform",
+  "private": true,
+  "description": "Plataforma Multi-tenant para negocios locales (WaaS)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev:admin & npm run dev:storefront",
+    "dev:admin": "npm run dev -w apps/admin",
+    "dev:storefront": "npm run dev -w apps/storefront",
+    "build:admin": "npm run build -w apps/admin",
+    "build:storefront": "npm run build -w apps/storefront"
+  },
+  "devDependencies": {
+    "supabase": "^2.92.1",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.38.0",
+    "lucide-react": "^1.8.0",
+    "tailwind-merge": "^3.5.0"
+  }
+}

@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos de Emergencia - Si Tailwind no carga, esto se verá igual */
+:root {
+  background-color: #050505 !important;
+  color: white !important;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #050505;
+}
