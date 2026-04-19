@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import VisualBuilder from './VisualBuilder';
 import { 
   Plus, 
   Globe, 
@@ -25,6 +26,7 @@ interface Tenant {
   theme_color: string;
   industry: string;
   status: string;
+  site_config?: any;
 }
 
 const Dashboard: React.FC = () => {
@@ -32,6 +34,7 @@ const Dashboard: React.FC = () => {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [editingTenant, setEditingTenant] = useState<Tenant | null>(null);
   
   const [siteName, setSiteName] = useState('');
   const [siteDomain, setSiteDomain] = useState('');
@@ -61,7 +64,8 @@ const Dashboard: React.FC = () => {
       name: siteName,
       custom_domain: siteDomain,
       theme_color: siteColor,
-      industry: siteIndustry
+      industry: siteIndustry,
+      site_config: { blocks: [] }
     }]);
 
     if (!error) {
@@ -73,6 +77,18 @@ const Dashboard: React.FC = () => {
       alert("Error en despliegue: " + error.message);
     }
     setLoading(false);
+  }
+
+  if (editingTenant) {
+    return (
+      <VisualBuilder 
+        tenant={editingTenant} 
+        onBack={() => {
+          setEditingTenant(null);
+          fetchTenants();
+        }} 
+      />
+    );
   }
 
   if (loading && tenants.length === 0) return (
@@ -138,7 +154,12 @@ const Dashboard: React.FC = () => {
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                    <a href={`http://${t.custom_domain}`} target="_blank" rel="noreferrer" className="bg-white text-black p-4 rounded-xl text-center text-[10px] font-black uppercase tracking-widest">Web</a>
-                   <button className="bg-white/5 border border-white/10 text-white p-4 rounded-xl text-[10px] font-black uppercase tracking-widest">Ajustes</button>
+                   <button 
+                    onClick={() => setEditingTenant(t)}
+                    className="bg-white/5 border border-white/10 text-white p-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white/10"
+                   >
+                    Ajustes
+                   </button>
                 </div>
               </motion.div>
             ))}
