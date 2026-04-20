@@ -3,7 +3,6 @@ import React from 'react';
 const getCommonStyles = (p: any) => {
   const n = (v: any) => typeof v === 'string' && v.includes('px') ? parseInt(v.replace('px','')) : (v || 0);
   const mAuto = p.margin === '0 auto' || p.margin === 'auto';
-  
   return {
     paddingTop: `${n(p.paddingT || p.paddingTop || p.padding)}px`,
     paddingRight: `${n(p.paddingR || p.paddingRight || p.padding)}px`,
@@ -15,7 +14,7 @@ const getCommonStyles = (p: any) => {
     marginLeft: mAuto ? 'auto' : `${n(p.marginL || p.marginLeft || p.margin)}px`,
     borderRadius: `${n(p.borderRadius || p.radius)}px`,
     backgroundColor: p.background || p.backgroundColor || p.bgColor || 'transparent',
-    border: `${n(p.borderWidth)}px ${p.borderStyle || 'solid'} ${p.borderColor || 'rgba(255,255,255,0.1)'}`,
+    border: `${n(p.borderWidth || 0)}px ${p.borderStyle || 'solid'} ${p.borderColor || 'rgba(255,255,255,0.1)'}`,
     boxShadow: p.shadow || 'none',
     maxWidth: p.maxWidth || '100%',
     textAlign: p.textAlign || 'left',
@@ -24,22 +23,16 @@ const getCommonStyles = (p: any) => {
 
 const Components: Record<string, React.FC<any>> = {
   Section: ({ children, ...p }: any) => (
-    <section style={{...getCommonStyles(p), width: '100%', display: 'flex', flexDirection: 'column', gap: p.gap ? `${p.gap}px` : '40px', overflow: 'hidden'}} className="relative">
+    <section style={{...getCommonStyles(p), width: '100%', display: 'flex', flexDirection: 'column', gap: '40px', overflow: 'hidden'}} className="relative antialiased">
       <div className="max-w-6xl mx-auto w-full flex flex-col gap-10 relative z-10">{children}</div>
     </section>
   ),
   Grid: ({ children, ...p }: any) => {
     const cols = p.cols || p.columns || 1;
-    return (
-      <div style={{ ...getCommonStyles(p), display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: `${p.gap || 32}px` }} className="w-full">
-        {children}
-      </div>
-    );
+    return <div style={{ ...getCommonStyles(p), display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: `${p.gap || 32}px` }} className="w-full">{children}</div>;
   },
   Box: ({ children, ...p }: any) => (
-    <div style={{...getCommonStyles(p), display: 'flex', flexDirection: p.flexDirection || 'column', alignItems: p.alignItems || 'stretch', justifyContent: p.justifyContent || 'flex-start', gap: `${p.gap || 16}px`}} className="w-full">
-      {children}
-    </div>
+    <div style={{...getCommonStyles(p), display: 'flex', flexDirection: p.flexDirection || 'column', alignItems: p.alignItems || 'stretch', justifyContent: p.justifyContent || 'flex-start', gap: `${p.gap || 16}px`}} className="w-full">{children}</div>
   ),
   Text: ({ text, fontSize, color, bold, fontWeight, textAlign, ...p }: any) => {
     const n = (v: any) => typeof v === 'string' ? parseInt(v.replace('px','')) : (v || 16);
@@ -55,27 +48,21 @@ const Components: Record<string, React.FC<any>> = {
       <button style={{ backgroundColor: bgColor || backgroundColor || p.background || '#fff', color: color || '#000' }} className="px-8 py-4 rounded-full text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl">{text}</button>
     </div>
   ),
-  Image: ({ src, height, ...p }: any) => {
-    const n = (v: any) => typeof v === 'string' ? parseInt(v.replace('px','')) : (v || 200);
-    return (
-      <div style={{...getCommonStyles(p), height: `${n(height)}px` }} className="w-full overflow-hidden border border-white/5 bg-[#111] relative">
-        <img src={src || 'https://images.unsplash.com/photo-1634017831461-452137a2701d?q=80&w=800'} className="w-full h-full object-cover" alt="Visual" />
-      </div>
-    );
-  },
+  Image: ({ src, height, ...p }: any) => (
+    <div style={{...getCommonStyles(p), height: `${typeof height === 'string' ? parseInt(height) : (height || 300)}px` }} className="w-full overflow-hidden border border-white/5 bg-[#111] relative">
+      <img src={src || 'https://images.unsplash.com/photo-1634017831461-452137a2701d?q=80&w=800'} className="w-full h-full object-cover" alt="Visual" />
+    </div>
+  ),
   Video: ({ url, ...p }: any) => (
     <div style={getCommonStyles(p)} className="w-full aspect-video bg-black overflow-hidden border border-white/10">
       <iframe src={url || 'https://www.youtube.com/embed/dQw4w9WgXcQ'} className="w-full h-full" frameBorder="0" allowFullScreen />
     </div>
   ),
-  Carousel: ({ children, height, ...p }: any) => {
-    const n = (v: any) => typeof v === 'string' ? parseInt(v.replace('px','')) : (v || 300);
-    return (
-      <div style={{ ...getCommonStyles(p), height: `${n(height)}px` }} className="w-full flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 no-scrollbar">
-        {React.Children.map(children, child => <div className="snap-center shrink-0 min-w-[80vw] md:min-w-[40vw] lg:min-w-[30vw] h-full">{child}</div>)}
-      </div>
-    );
-  },
+  Carousel: ({ children, height, ...p }: any) => (
+    <div style={{ ...getCommonStyles(p), height: `${typeof height === 'string' ? parseInt(height) : (height || 300)}px` }} className="w-full flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 no-scrollbar">
+      {React.Children.map(children, child => <div className="snap-center shrink-0 min-w-[80vw] md:min-w-[40vw] lg:min-w-[30vw] h-full">{child}</div>)}
+    </div>
+  ),
   ServiceCard: ({ title, price, desc, description, image, ...p }: any) => {
     const finalDesc = desc || description || 'Servicio Premium...';
     return (
@@ -94,7 +81,7 @@ const Components: Record<string, React.FC<any>> = {
   BookingSystem: ({ title, ...p }: any) => (
     <div style={getCommonStyles(p)} className="w-full bg-[#0a0a0a] border border-white/5 rounded-[40px] p-10 shadow-2xl flex flex-col gap-8">
       <h2 className="text-2xl font-black text-white uppercase italic mb-2 text-center">{title || 'Gestión de Citas'}</h2>
-      <div className="grid grid-cols-7 gap-2 opacity-50">{[...Array(28)].map((_, i) => <div key={i} className="h-10 rounded-xl bg-white/5 flex items-center justify-center text-[10px] font-bold text-white/40">{i+1}</div>)}</div>
+      <div className="grid grid-cols-7 gap-2 opacity-50">{[...Array(28)].map((_, i) => <div key={i} className="h-10 rounded-xl bg-white/5 flex items-center justify-center text-[10px] font-bold text-white/40 hover:bg-blue-600 hover:text-white transition-all cursor-pointer">{i+1}</div>)}</div>
       <button className="w-full py-4 bg-blue-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg">Confirmar Reserva</button>
     </div>
   )
@@ -106,11 +93,11 @@ export const CraftRenderer = ({ json }: { json: any }) => {
   const renderNode = (nodeId: string): React.ReactNode => {
     const node = nodes[nodeId];
     if (!node) return null;
-    const ComponentName = node.type.resolvedName;
+    const ComponentName = node.type.resolvedName || node.type;
     const Component = Components[ComponentName];
     if (!Component) return null;
     const children = (node.nodes || []).map((id: string) => renderNode(id));
     return <Component key={nodeId} {...node.props}>{children}</Component>;
   };
-  return <div className="antialiased bg-[#050505] min-h-screen text-white">{renderNode('ROOT')}</div>;
+  return <div className="antialiased bg-[#050505] min-h-screen text-white selection:bg-blue-500">{renderNode('ROOT')}</div>;
 };
