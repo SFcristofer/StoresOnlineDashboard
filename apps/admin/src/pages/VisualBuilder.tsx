@@ -1,49 +1,49 @@
 import React, { useState } from 'react';
 import { Editor, Frame, Element, useEditor } from '@craftjs/core';
 import { supabase } from '../lib/supabase';
-import { Section, Row, Column, Text, Button, Image, ServiceCard, BookingSystem, Carousel } from '../components/editor/UserComponents';
+import { Section, Grid, Box, Text, Button, Image, Video, Carousel, ServiceCard, BookingSystem } from '../components/editor/UserComponents';
 import { SettingsPanel } from '../components/editor/SettingsPanel';
 import { AIGenerator } from '../components/editor/AIGenerator';
 import { 
   Type, ImageIcon, MousePointer2, Save, ArrowLeft, Loader2, 
-  Layers, Columns, Laptop, Smartphone 
+  Layers, Columns, Monitor, Smartphone, Play, LayoutGrid, Box as BoxIcon, Calendar, Briefcase, GalleryHorizontal
 } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+const SidebarItem = ({ icon: Icon, label, refProp }: any) => (
+  <div ref={refProp} className="p-4 bg-white/[0.03] border border-white/5 rounded-2xl hover:border-blue-500/50 hover:bg-blue-600/5 cursor-grab flex flex-col items-center justify-center gap-2.5 group transition-all">
+    <div className="text-white/40 group-hover:text-blue-500 transition-colors"><Icon size={20} /></div>
+    <span className="text-xs font-bold uppercase tracking-tight opacity-50 group-hover:opacity-100 text-center leading-none">{label}</span>
+  </div>
+);
 
 const Toolbox = () => {
   const { connectors } = useEditor();
-
   return (
-    <aside className="w-64 border-r border-white/5 p-6 bg-[#0f121d] overflow-y-auto shrink-0 z-10 flex flex-col">
-      <div className="mb-8">
-        <p className="text-[9px] font-bold text-white/20 uppercase mb-4 tracking-widest">Estructura</p>
-        <div className="space-y-2">
-          <div ref={(ref: any) => connectors.create(ref, <Element is={Section} canvas />)} className="p-3 bg-white/5 border border-white/5 rounded-xl hover:bg-blue-600/10 cursor-grab flex items-center gap-3 group transition-all">
-            <Layers size={14} className="text-white/20 group-hover:text-blue-500" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Sección</span>
-          </div>
-          <div ref={(ref: any) => connectors.create(ref, <Element is={Row} canvas><Element is={Column} width={1} canvas /><Element is={Column} width={1} canvas /></Element>)} className="p-3 bg-white/5 border border-white/5 rounded-xl hover:bg-blue-600/10 cursor-grab flex items-center gap-3 group transition-all">
-            <Columns size={14} className="text-white/20 group-hover:text-blue-500" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">2 Columnas</span>
-          </div>
-        </div>
+    <aside className="w-72 border-r border-white/5 bg-[#0a0a0a] flex flex-col shrink-0 overflow-hidden">
+      <div className="p-6 border-b border-white/5 flex items-center gap-3">
+        <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse" />
+        <h2 className="text-xs font-black uppercase tracking-widest text-white/60">HERRAMIENTAS</h2>
       </div>
-
-      <div>
-        <p className="text-[9px] font-bold text-white/20 uppercase mb-4 tracking-widest">Elementos</p>
-        <div className="space-y-2">
-          <div ref={(ref: any) => connectors.create(ref, <Text text="Título de ejemplo" fontSize={28} bold={true} center={false} />)} className="p-3 bg-white/5 border border-white/5 rounded-xl hover:bg-blue-600/10 cursor-grab flex items-center gap-3 group transition-all">
-            <Type size={14} className="text-white/20 group-hover:text-blue-500" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Texto</span>
+      <div className="flex-1 overflow-y-auto p-6 space-y-10 custom-scrollbar">
+        <section>
+          <p className="text-[10px] font-black text-blue-500 uppercase mb-4 tracking-widest italic">Estructuras</p>
+          <div className="grid grid-cols-2 gap-3">
+            <SidebarItem icon={BoxIcon} label="Sección" refProp={(ref: any) => connectors.create(ref, <Element is={Section} canvas />)} />
+            <SidebarItem icon={Columns} label="2 Columnas" refProp={(ref: any) => connectors.create(ref, <Element is={Grid} cols={2} canvas><Element is={Box} canvas /><Element is={Box} canvas /></Element>)} />
+            <SidebarItem icon={GalleryHorizontal} label="Carrusel" refProp={(ref: any) => connectors.create(ref, <Element is={Carousel} canvas />)} />
+            <SidebarItem icon={LayoutGrid} label="Grilla 3" refProp={(ref: any) => connectors.create(ref, <Element is={Grid} cols={3} canvas><Element is={Box} canvas /><Element is={Box} canvas /><Element is={Box} canvas /></Element>)} />
           </div>
-          <div ref={(ref: any) => connectors.create(ref, <Image />)} className="p-3 bg-white/5 border border-white/5 rounded-xl hover:bg-blue-600/10 cursor-grab flex items-center gap-3 group transition-all">
-            <ImageIcon size={14} className="text-white/20 group-hover:text-blue-500" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Imagen</span>
+        </section>
+        <section>
+          <p className="text-[10px] font-black text-blue-500 uppercase mb-4 tracking-widest italic">Elementos</p>
+          <div className="grid grid-cols-2 gap-3">
+            <SidebarItem icon={Type} label="Texto" refProp={(ref: any) => connectors.create(ref, <Text text="Nuevo Texto" fontSize={18} />)} />
+            <SidebarItem icon={MousePointer2} label="Botón" refProp={(ref: any) => connectors.create(ref, <Button text="Acción" />)} />
+            <SidebarItem icon={ImageIcon} label="Imagen" refProp={(ref: any) => connectors.create(ref, <Image />)} />
+            <SidebarItem icon={Play} label="Video" refProp={(ref: any) => connectors.create(ref, <Video />)} />
           </div>
-          <div ref={(ref: any) => connectors.create(ref, <Button text="Acción" />)} className="p-3 bg-white/5 border border-white/5 rounded-xl hover:bg-blue-600/10 cursor-grab flex items-center gap-3 group transition-all">
-            <MousePointer2 size={14} className="text-white/20 group-hover:text-blue-500" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Botón</span>
-          </div>
-        </div>
+        </section>
       </div>
     </aside>
   );
@@ -62,46 +62,34 @@ const VisualBuilder: React.FC<{ tenant: any, onBack: () => void }> = ({ tenant, 
   };
 
   return (
-    <Editor resolver={{ Section, Row, Column, Text, Button, Image, ServiceCard, BookingSystem, Carousel, Element }}>
-      <div className="h-screen bg-[#0a0c14] text-white flex flex-col font-sans overflow-hidden">
-        {/* GENERADOR DE IA FLOTANTE */}
+    <Editor resolver={{ Section, Grid, Box, Text, Button, Image, Video, Carousel, ServiceCard, BookingSystem, Element }}>
+      <div className="h-screen bg-[#050505] text-white flex flex-col font-sans overflow-hidden antialiased">
         <AIGenerator tenantId={tenant.id} />
-
-        <header className="border-b border-white/5 px-6 py-4 flex justify-between items-center bg-[#0f121d] shrink-0 z-50">
+        <header className="h-16 border-b border-white/5 px-8 flex justify-between items-center bg-[#0a0a0a] shrink-0 z-50 shadow-2xl">
           <div className="flex items-center gap-6">
-            <button onClick={onBack} className="p-2 hover:bg-white/5 rounded-lg transition-all"><ArrowLeft size={18} /></button>
-            <h1 className="text-sm font-bold uppercase tracking-widest">Editor Visual</h1>
+            <button onClick={onBack} className="p-2.5 hover:bg-white/5 rounded-xl transition-all border border-white/5"><ArrowLeft size={20} /></button>
+            <div className="h-6 w-px bg-white/10" />
+            <span className="text-xs font-black uppercase tracking-[0.2em] text-white/40 italic text-blue-500">STUDIO_ENGINE <span className="text-white/20 mx-2">/</span> <span className="text-white/80">{tenant.name}</span></span>
           </div>
-
-          <div className="flex bg-white/5 p-1 rounded-xl gap-1">
-             <button onClick={() => setViewMode('desktop')} className={`p-2 rounded-lg transition-all ${viewMode === 'desktop' ? 'bg-blue-600' : 'hover:bg-white/5'}`}><Laptop size={14} /></button>
-             <button onClick={() => setViewMode('mobile')} className={`p-2 rounded-lg transition-all ${viewMode === 'mobile' ? 'bg-blue-600' : 'hover:bg-white/5'}`}><Smartphone size={14} /></button>
+          <div className="flex bg-white/5 p-1 rounded-xl gap-2">
+             <button onClick={() => setViewMode('desktop')} className={`px-6 py-2 rounded-lg transition-all ${viewMode === 'desktop' ? 'bg-blue-600 shadow-lg' : 'hover:bg-white/5'}`}><Monitor size={18} /></button>
+             <button onClick={() => setViewMode('mobile')} className={`px-6 py-2 rounded-lg transition-all ${viewMode === 'mobile' ? 'bg-blue-600 shadow-lg' : 'hover:bg-white/5'}`}><Smartphone size={18} /></button>
           </div>
-          
           <SaveButton onSave={saveConfig} isSaving={isSaving} />
         </header>
-
         <div className="flex-1 flex overflow-hidden">
           <Toolbox />
-          <main className="flex-1 bg-black/60 overflow-y-auto custom-scrollbar flex justify-center p-10">
-            <div 
-              style={{ 
-                width: viewMode === 'mobile' ? '375px' : '100%', 
-                maxWidth: viewMode === 'mobile' ? '375px' : '1000px',
-                minHeight: '100%'
-              }}
-              className="bg-[#0a0c14] shadow-2xl transition-all duration-300 relative border border-white/5 rounded-xl flex flex-col"
-            >
+          <main className="flex-1 overflow-y-auto p-12 flex justify-center bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:32px_32px]">
+            <motion.div animate={{ width: viewMode === 'mobile' ? '375px' : '1000px' }} className="bg-black shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/10 rounded-3xl overflow-hidden h-fit min-h-screen origin-top">
               <Frame>
-                <Element is={Section} paddingY={80} background="#000000" canvas>
-                  <Text text="Diseño con Inteligencia Artificial" fontSize={32} bold={true} center={true} />
-                  <Text text="Describe tu sitio y deja que Gemini haga el trabajo pesado." fontSize={14} color="#ffffff40" center={true} />
+                <Element is={Section} canvas>
+                  <Text text="Diseño Studio Activo" fontSize={48} bold={true} center={true} />
+                  <Text text="Interfaz profesional de alta fidelidad." fontSize={16} color="rgba(255,255,255,0.4)" center={true} />
                 </Element>
               </Frame>
-            </div>
+            </motion.div>
           </main>
-
-          <aside className="w-80 border-l border-white/5 bg-[#0f121d] shrink-0 overflow-y-auto">
+          <aside className="w-80 border-l border-white/5 bg-[#0a0a0a] shrink-0 overflow-y-auto shadow-2xl">
             <SettingsPanel />
           </aside>
         </div>
@@ -113,8 +101,8 @@ const VisualBuilder: React.FC<{ tenant: any, onBack: () => void }> = ({ tenant, 
 const SaveButton = ({ onSave, isSaving }: any) => {
   const { query } = useEditor();
   return (
-    <button onClick={() => onSave(query)} disabled={isSaving} className="bg-blue-600 px-6 py-2.5 rounded-lg font-bold text-[11px] uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-blue-600/20 active:scale-95 transition-all">
-      {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />} Guardar
+    <button onClick={() => onSave(query)} disabled={isSaving} className="bg-blue-600 px-8 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest flex items-center gap-3 hover:bg-blue-500 transition-all active:scale-95 shadow-lg shadow-blue-600/20">
+      {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} PUBLICAR
     </button>
   );
 };

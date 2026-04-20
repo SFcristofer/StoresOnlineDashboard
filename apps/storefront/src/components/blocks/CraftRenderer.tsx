@@ -1,81 +1,75 @@
 import React from 'react';
 
+const getCommonStyles = (props: any) => ({
+  padding: `${props.paddingT ?? 0}px ${props.paddingR ?? 0}px ${props.paddingB ?? 0}px ${props.paddingL ?? 0}px`,
+  margin: `${props.marginT ?? 0}px ${props.marginR ?? 0}px ${props.marginB ?? 0}px ${props.marginL ?? 0}px`,
+  borderRadius: `${props.borderRadius ?? 0}px`,
+  backgroundColor: props.background || 'transparent',
+  borderWidth: `${props.borderWidth ?? 0}px`,
+  borderColor: props.borderColor || 'rgba(255,255,255,0.1)',
+  borderStyle: props.borderStyle || 'solid',
+  boxShadow: props.shadow || 'none',
+});
+
 const Components: Record<string, React.FC<any>> = {
-  Section: ({ children, background, paddingT, paddingB }: any) => (
-    <section style={{ backgroundColor: background || '#050505', padding: `${paddingT || 80}px 24px ${paddingB || 80}px` }} className="w-full relative">
+  Section: ({ children, ...props }: any) => (
+    <section style={getCommonStyles(props)} className="w-full relative">
       <div className="max-w-6xl mx-auto">{children}</div>
     </section>
   ),
-  Row: ({ children, gap }: any) => (
-    <div style={{ gap: `${gap || 32}px` }} className="flex flex-col md:flex-row w-full">{children}</div>
+  Grid: ({ children, cols, gap, ...props }: any) => (
+    <div style={{ ...getCommonStyles(props), display: 'grid', gridTemplateColumns: `repeat(${cols || 1}, minmax(0, 1fr))`, gap: `${gap || 20}px` }} className="w-full">{children}</div>
   ),
-  Column: ({ children, width, paddingT, paddingB, paddingL, paddingR }: any) => (
-    <div style={{ flex: width || 1, padding: `${paddingT || 0}px ${paddingR || 0}px ${paddingB || 0}px ${paddingL || 0}px`, display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {children}
+  Box: ({ children, ...props }: any) => (
+    <div style={{...getCommonStyles(props), display: 'flex', flexDirection: 'column', gap: '15px'}} className="w-full">{children}</div>
+  ),
+  Text: ({ text, fontSize, color, bold, textAlign, ...props }: any) => (
+    <div style={getCommonStyles(props)} className="w-full">
+      <p style={{ fontSize: `${fontSize}px`, color: color || '#fff', fontWeight: bold ? '800' : '400', textAlign: textAlign || 'left', lineHeight: '1.4' }}>{text}</p>
     </div>
   ),
-  ServiceCard: ({ title, price, desc, image }: any) => (
-    <div className="bg-[#111] border border-white/5 p-6 rounded-[32px] overflow-hidden group hover:border-blue-500/50 transition-all shadow-2xl w-full">
-      <div className="h-48 bg-[#1a1a1a] rounded-2xl mb-6 overflow-hidden">
-        <img src={image || 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=800'} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="Service" />
-      </div>
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="text-xl font-bold text-white uppercase italic tracking-tighter">{title}</h3>
-        <span className="text-blue-500 font-black tracking-tighter text-lg">${price}</span>
-      </div>
-      <p className="text-white/40 text-[11px] leading-relaxed mb-6">{desc}</p>
-      <button className="w-full py-4 bg-white text-black rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-blue-600 hover:text-white transition-colors">Reservar_Cita</button>
+  Button: ({ text, bgColor, color, ...props }: any) => (
+    <div style={getCommonStyles(props)} className="inline-block">
+      <button style={{ backgroundColor: bgColor || '#fff', color: color || '#000' }} className="px-10 py-4 rounded-full text-xs font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-2xl">{text}</button>
     </div>
   ),
-  BookingSystem: ({ title }: any) => (
-    <div className="w-full bg-[#0a0a0a] border border-white/5 rounded-[40px] p-10 shadow-2xl">
-      <h2 className="text-2xl font-black text-white uppercase italic tracking-tighter mb-8 text-center">{title}</h2>
-      <div className="grid grid-cols-7 gap-1 mb-8 opacity-50">
-        {[...Array(31)].map((_, i) => (
-          <div key={i} className={`h-10 rounded-lg flex items-center justify-center text-[9px] font-bold ${i === 14 ? 'bg-blue-600 text-white' : 'bg-white/5 text-white/40'}`}>{i + 1}</div>
-        ))}
-      </div>
-      <div className="space-y-4">
-         <div className="grid grid-cols-2 gap-3">
-            {['09:00 AM', '11:00 AM', '02:00 PM', '04:30 PM'].map(t => (
-              <div key={t} className="py-3 bg-white/5 border border-white/5 rounded-xl text-center text-[10px] font-bold text-white hover:bg-blue-600 transition-all cursor-pointer">{t}</div>
-            ))}
-         </div>
-         <button className="w-full py-4 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/20">Confirmar_Reserva</button>
-      </div>
+  Image: ({ src, height, ...props }: any) => (
+    <div style={{...getCommonStyles(props), height: `${height || 300}px`, overflow: 'hidden' }} className="w-full bg-[#111] border border-white/5">
+      <img src={src || 'https://images.unsplash.com/photo-1634017831461-452137a2701d?q=80&w=800'} className="w-full h-full object-cover" alt="Visual" />
     </div>
   ),
-  Text: ({ text, fontSize, color, bold, textAlign }: any) => (
-    <p style={{ fontSize: `${fontSize || 16}px`, color: color || '#ffffff', fontWeight: bold ? '900' : '400', textAlign: textAlign || 'left', lineHeight: '1.2' }} className="uppercase tracking-tighter italic break-words">
-      {text}
-    </p>
-  ),
-  Button: ({ text }: any) => (
-    <button className="px-10 py-4 bg-white text-black rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl hover:scale-105 transition-all">
-      {text}
-    </button>
-  ),
-  Image: ({ src, height, borderRadius }: any) => (
-    <div style={{ height: `${height || 300}px`, borderRadius: `${borderRadius || 24}px` }} className="w-full overflow-hidden border border-white/5 shadow-2xl my-4">
-      <img src={src || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=800'} className="w-full h-full object-cover" alt="Visual" />
+  Video: ({ url, ...props }: any) => (
+    <div style={getCommonStyles(props)} className="w-full aspect-video overflow-hidden border border-white/10 shadow-2xl bg-black">
+      <iframe src={url || 'https://www.youtube.com/embed/dQw4w9WgXcQ'} className="w-full h-full" frameBorder="0" allowFullScreen />
     </div>
   ),
-  Carousel: ({ children, height }: any) => (
-    <div style={{ height: `${height || 400}px` }} className="w-full flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 custom-scrollbar">
-      {React.Children.map(children, child => (
-        <div className="snap-center shrink-0 min-w-[80vw] md:min-w-[40vw] lg:min-w-[30vw] h-full">
-          {child}
-        </div>
-      ))}
+  Carousel: ({ children, height, ...props }: any) => (
+    <div style={{ ...getCommonStyles(props), height: `${height || 400}px` }} className="w-full flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 no-scrollbar">
+      {React.Children.map(children, child => <div className="snap-center shrink-0 min-w-[80vw] md:min-w-[40vw] lg:min-w-[30vw] h-full">{child}</div>)}
+    </div>
+  ),
+  ServiceCard: ({ title, price, desc, ...props }: any) => (
+    <div style={getCommonStyles(props)} className="bg-[#111] border border-white/5 p-8 rounded-3xl w-full hover:border-blue-500/30 transition-all">
+      <h3 className="text-xl font-bold text-white uppercase italic mb-1">{title || 'Servicio'}</h3>
+      <p className="text-blue-500 font-black text-lg mb-4">${price || '0'}</p>
+      <p className="text-white/40 text-[11px] leading-relaxed mb-8">{desc || 'Descripción...'}</p>
+      <button className="w-full py-4 bg-white text-black rounded-xl text-[10px] font-bold uppercase tracking-widest">Reservar_Cita</button>
+    </div>
+  ),
+  BookingSystem: ({ title, ...props }: any) => (
+    <div style={getCommonStyles(props)} className="w-full bg-[#0a0a0a] border border-white/5 rounded-[40px] p-12 shadow-2xl">
+      <h2 className="text-2xl font-black text-white uppercase italic mb-8 text-center">{title || 'Calendario'}</h2>
+      <div className="grid grid-cols-7 gap-2 mb-8">
+        {[...Array(28)].map((_, i) => <div key={i} className="h-12 rounded-xl bg-white/5 flex items-center justify-center text-[10px] font-bold text-white/40 hover:bg-blue-600 hover:text-white transition-all cursor-pointer">{i+1}</div>)}
+      </div>
+      <button className="w-full py-5 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/20">Confirmar_Reserva_Cita</button>
     </div>
   )
-  };
-
+};
 
 export const CraftRenderer = ({ json }: { json: any }) => {
   if (!json) return null;
   const nodes = typeof json === 'string' ? JSON.parse(json) : json;
-
   const renderNode = (nodeId: string): React.ReactNode => {
     const node = nodes[nodeId];
     if (!node) return null;
@@ -85,6 +79,5 @@ export const CraftRenderer = ({ json }: { json: any }) => {
     const children = (node.nodes || []).map((id: string) => renderNode(id));
     return <Component key={nodeId} {...node.props}>{children}</Component>;
   };
-
   return <div className="antialiased bg-[#050505] min-h-screen text-white">{renderNode('ROOT')}</div>;
 };

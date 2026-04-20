@@ -1,23 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useEditor } from '@craftjs/core';
-import { 
-  Type, 
-  Maximize, 
-  Square, 
-  Palette, 
-  AlignLeft, 
-  AlignCenter, 
-  AlignRight, 
-  AlignJustify,
-  ChevronDown,
-  Trash2
-} from 'lucide-react';
+import { Palette, Maximize, Settings, Trash2, MousePointer2, Droplets, Square } from 'lucide-react';
 
 export const SettingsPanel = () => {
   const { actions, selected, isEnabled } = useEditor((state, query) => {
     const [currentNodeId] = state.events.selected;
     let selected;
-
     if (currentNodeId) {
       selected = {
         id: currentNodeId,
@@ -26,13 +14,15 @@ export const SettingsPanel = () => {
         props: state.nodes[currentNodeId].data.props,
       };
     }
-
     return { selected, isEnabled: state.options.enabled };
   });
 
+  const [activeTab, setActiveTab] = useState('style');
+
   if (!isEnabled || !selected) return (
-    <div className="h-full flex items-center justify-center p-10 text-center text-white/10 italic text-[10px] uppercase tracking-[0.5em] font-black">
-      Selecciona un elemento para configurar el sistema
+    <div className="h-full flex flex-col items-center justify-center p-12 text-center opacity-30">
+       <MousePointer2 size={32} className="mb-4" />
+       <p className="text-xs font-black uppercase tracking-[0.3em]">Seleccionar_Elemento</p>
     </div>
   );
 
@@ -40,120 +30,79 @@ export const SettingsPanel = () => {
     actions.setProp(selected.id, (props: any) => props[prop] = value);
   };
 
-  const ControlGroup = ({ title, icon: Icon, children }: any) => (
-    <div className="border-b border-white/5 p-8">
-      <div className="flex items-center gap-3 mb-8 opacity-40">
-        <Icon size={14} />
-        <span className="text-[10px] font-black uppercase tracking-widest">{title}</span>
-      </div>
-      <div className="space-y-6">{children}</div>
-    </div>
+  const TabButton = ({ id, icon: Icon, label }: any) => (
+    <button onClick={() => setActiveTab(id)} className={`flex-1 flex flex-col items-center gap-2 py-4 border-b-2 transition-all ${activeTab === id ? 'border-blue-500 text-blue-500 bg-blue-500/5' : 'border-transparent text-white/20'}`}>
+      <Icon size={16} />
+      <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
+    </button>
   );
 
   return (
-    <div className="h-full flex flex-col bg-[#0f121d]">
-      <header className="p-8 border-b border-white/5 flex justify-between items-center">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-blue-500 italic">Propiedades_</h2>
-        <span className="text-[9px] font-black bg-white/5 px-3 py-1 rounded-full uppercase">{selected.name}</span>
+    <div className="h-full flex flex-col bg-[#0a0a0a]">
+      <header className="p-6 border-b border-white/5 bg-white/[0.01]">
+        <p className="text-xs font-black text-blue-500 uppercase tracking-widest mb-1 italic">Propiedades_</p>
+        <p className="text-lg font-black italic uppercase text-white truncate">{selected.name}</p>
       </header>
-
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        {/* TIPOGRAFÍA */}
-        {selected.props.text !== undefined && (
-          <ControlGroup title="Tipografía" icon={Type}>
-             <div>
-              <label className="text-[9px] font-bold text-white/20 uppercase mb-3 block">Contenido</label>
-              <textarea 
-                className="w-full bg-white/5 border border-white/5 p-4 rounded-xl outline-none focus:border-blue-500 font-medium text-sm text-white h-24"
-                value={selected.props.text}
-                onChange={(e) => setProp('text', e.target.value)}
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
+      <div className="flex border-b border-white/5">
+        <TabButton id="style" icon={Palette} label="Estilo" />
+        <TabButton id="layout" icon={Maximize} label="Espacio" />
+        <TabButton id="content" icon={Settings} label="Config" />
+      </div>
+      <div className="flex-1 overflow-y-auto p-6 space-y-10 custom-scrollbar">
+        {activeTab === 'style' && (
+          <>
+            <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="text-[9px] font-bold text-white/20 uppercase mb-3 block">Tamaño</label>
-                <input type="number" className="w-full bg-white/5 border border-white/5 p-3 rounded-lg text-xs" value={selected.props.fontSize} onChange={e => setProp('fontSize', e.target.value)} />
+                <label className="text-white/40 uppercase mb-2 block font-black text-[9px]">Fondo</label>
+                <input type="color" className="w-full h-10 rounded-xl bg-transparent border border-white/10 cursor-pointer" value={selected.props.background || '#000000'} onChange={e => setProp('background', e.target.value)} />
               </div>
-              <div>
-                <label className="text-[9px] font-bold text-white/20 uppercase mb-3 block">Fuente</label>
-                <select className="w-full bg-white/5 border border-white/5 p-3 rounded-lg text-xs" value={selected.props.fontType} onChange={e => setProp('fontType', e.target.value)}>
-                  <option value="sans">SANS</option>
-                  <option value="serif">SERIF</option>
-                  <option value="mono">MONO</option>
-                  <option value="display">DISPLAY</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex bg-white/5 p-1 rounded-xl gap-1">
-               <button onClick={() => setProp('textAlign', 'left')} className={`flex-1 p-2 rounded-lg ${selected.props.textAlign === 'left' ? 'bg-blue-600' : 'hover:bg-white/5'}`}><AlignLeft size={14} /></button>
-               <button onClick={() => setProp('textAlign', 'center')} className={`flex-1 p-2 rounded-lg ${selected.props.textAlign === 'center' ? 'bg-blue-600' : 'hover:bg-white/5'}`}><AlignCenter size={14} /></button>
-               <button onClick={() => setProp('textAlign', 'right')} className={`flex-1 p-2 rounded-lg ${selected.props.textAlign === 'right' ? 'bg-blue-600' : 'hover:bg-white/5'}`}><AlignRight size={14} /></button>
-               <button onClick={() => setProp('textAlign', 'justify')} className={`flex-1 p-2 rounded-lg ${selected.props.textAlign === 'justify' ? 'bg-blue-600' : 'hover:bg-white/5'}`}><AlignJustify size={14} /></button>
-            </div>
-          </ControlGroup>
-        )}
-
-        {/* COLORES */}
-        <ControlGroup title="Colores & Fondo" icon={Palette}>
-           <div className="grid grid-cols-2 gap-4">
               {selected.props.color && (
                 <div>
-                  <label className="text-[9px] font-bold text-white/20 uppercase mb-3 block">Texto</label>
-                  <input type="color" className="w-full h-10 rounded-lg bg-transparent cursor-pointer" value={selected.props.color} onChange={e => setProp('color', e.target.value)} />
+                  <label className="text-white/40 uppercase mb-2 block font-black text-[9px]">Texto</label>
+                  <input type="color" className="w-full h-10 rounded-xl bg-transparent border border-white/10 cursor-pointer" value={selected.props.color || '#ffffff'} onChange={e => setProp('color', e.target.value)} />
                 </div>
               )}
-              <div>
-                <label className="text-[9px] font-bold text-white/20 uppercase mb-3 block">Fondo</label>
-                <input type="color" className="w-full h-10 rounded-lg bg-transparent cursor-pointer" value={selected.props.background || selected.props.bgColor} onChange={e => setProp(selected.props.background ? 'background' : 'bgColor', e.target.value)} />
+            </div>
+            <div className="space-y-4">
+              <div className="flex justify-between">
+                <label className="text-white/40 uppercase font-black text-[9px]">Redondeado</label>
+                <span className="text-[10px] font-mono text-blue-500">{selected.props.borderRadius}px</span>
               </div>
-           </div>
-        </ControlGroup>
-
-        {/* ESPACIADO (PADDING) */}
-        <ControlGroup title="Espaciado (Padding)" icon={Maximize}>
-           <div className="grid grid-cols-2 gap-x-4 gap-y-6">
+              <input type="range" min="0" max="100" className="w-full accent-blue-600" value={selected.props.borderRadius || 0} onChange={e => setProp('borderRadius', parseInt(e.target.value))} />
+            </div>
+          </>
+        )}
+        {activeTab === 'layout' && (
+           <div className="grid grid-cols-2 gap-x-6 gap-y-8">
               {['T', 'B', 'L', 'R'].map(dir => (
                 <div key={dir}>
-                  <label className="text-[9px] font-bold text-white/20 uppercase mb-2 block">{dir === 'T' ? 'Arriba' : dir === 'B' ? 'Abajo' : dir === 'L' ? 'Izq' : 'Der'}</label>
-                  <input type="number" className="w-full bg-white/5 border border-white/5 p-3 rounded-lg text-xs" value={selected.props[`padding${dir}`] || 0} onChange={e => setProp(`padding${dir}`, parseInt(e.target.value))} />
+                  <label className="text-white/40 uppercase mb-2 block font-black text-[9px]">Padding {dir}</label>
+                  <input type="number" className="w-full bg-white/5 border border-white/5 p-3 rounded-xl text-xs font-bold text-white outline-none focus:border-blue-500" value={selected.props[`padding${dir}`] || 0} onChange={e => setProp(`padding${dir}`, parseInt(e.target.value))} />
                 </div>
               ))}
            </div>
-        </ControlGroup>
-
-        {/* BORDES & SOMBRAS */}
-        <ControlGroup title="Bordes & Sombras" icon={Square}>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-[9px] font-bold text-white/20 uppercase mb-3 block">Grosor</label>
-                <input type="number" className="w-full bg-white/5 border border-white/5 p-3 rounded-lg text-xs" value={selected.props.borderWidth || 0} onChange={e => setProp('borderWidth', parseInt(e.target.value))} />
-              </div>
-              <div>
-                <label className="text-[9px] font-bold text-white/20 uppercase mb-3 block">Radio</label>
-                <input type="number" className="w-full bg-white/5 border border-white/5 p-3 rounded-lg text-xs" value={selected.props.borderRadius} onChange={e => setProp('borderRadius', parseInt(e.target.value))} />
-              </div>
-            </div>
-            <div>
-              <label className="text-[9px] font-bold text-white/20 uppercase mb-3 block">Sombra</label>
-              <select className="w-full bg-white/5 border border-white/5 p-3 rounded-lg text-xs" value={selected.props.shadow || 'none'} onChange={e => setProp('shadow', e.target.value)}>
-                <option value="none">NINGUNA</option>
-                <option value="soft">SUAVE</option>
-                <option value="medium">MEDIA</option>
-                <option value="intense">INTENSA</option>
-              </select>
-            </div>
-        </ControlGroup>
+        )}
+        {activeTab === 'content' && (
+           <div className="space-y-8">
+              {selected.props.text !== undefined && (
+                <div>
+                  <label className="text-white/40 uppercase mb-2 block font-black text-[9px]">Contenido</label>
+                  <textarea className="w-full bg-white/5 border border-white/5 p-4 rounded-2xl text-sm font-medium text-white h-40 outline-none focus:border-blue-500 resize-none" value={selected.props.text} onChange={(e) => setProp('text', e.target.value)} />
+                </div>
+              )}
+              {selected.props.src !== undefined && (
+                <div>
+                  <label className="text-white/40 uppercase mb-2 block font-black text-[9px]">URL Imagen</label>
+                  <input className="w-full bg-white/5 border border-white/5 p-3 rounded-xl text-xs text-white focus:border-blue-500 outline-none" value={selected.props.src} onChange={(e) => setProp('src', e.target.value)} />
+                </div>
+              )}
+           </div>
+        )}
       </div>
-
-      <footer className="p-8 border-t border-white/5">
+      <footer className="p-6 border-t border-white/5">
         {selected.isDeletable && (
-          <button 
-            onClick={() => actions.delete(selected.id)}
-            className="w-full py-4 bg-red-500/5 text-red-500 rounded-xl font-bold uppercase text-[10px] tracking-widest border border-red-500/10 hover:bg-red-500/10 transition-all flex items-center justify-center gap-2"
-          >
-            <Trash2 size={14} /> Eliminar Componente
+          <button onClick={() => actions.delete(selected.id)} className="w-full py-4 bg-red-500/10 text-red-500 rounded-2xl text-[10px] font-black uppercase hover:bg-red-500 hover:text-white transition-all border border-red-500/10 flex items-center justify-center gap-2">
+            <Trash2 size={14} /> Eliminar_Componente
           </button>
         )}
       </footer>
