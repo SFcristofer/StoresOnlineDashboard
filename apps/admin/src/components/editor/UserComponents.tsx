@@ -1,175 +1,167 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNode } from '@craftjs/core';
-import { supabase } from '../../lib/supabase';
-import { Loader2, UploadCloud } from 'lucide-react';
+import { UploadCloud } from 'lucide-react';
 
 const getCommonStyles = (p: any) => {
-  const n = (v: any) => typeof v === 'string' && v.includes('px') ? parseInt(v.replace('px','')) : (v || 0);
-  const mAuto = p.margin === '0 auto' || p.margin === 'auto';
+  const paddingTop = p.paddingTop !== undefined ? p.paddingTop : (p.padding || 0);
+  const paddingBottom = p.paddingBottom !== undefined ? p.paddingBottom : (p.padding || 0);
+  const paddingLeft = p.paddingLeft !== undefined ? p.paddingLeft : (p.padding || 0);
+  const paddingRight = p.paddingRight !== undefined ? p.paddingRight : (p.padding || 0);
+  
+  const marginTop = p.marginTop !== undefined ? p.marginTop : (p.margin || 0);
+  const marginBottom = p.marginBottom !== undefined ? p.marginBottom : (p.margin || 0);
+
   return {
-    paddingTop: `${n(p.paddingT || p.paddingTop || p.padding)}px`,
-    paddingRight: `${n(p.paddingR || p.paddingRight || p.padding)}px`,
-    paddingBottom: `${n(p.paddingB || p.paddingBottom || p.padding)}px`,
-    paddingLeft: `${n(p.paddingL || p.paddingLeft || p.padding)}px`,
-    marginTop: `${n(p.marginT || p.marginTop || (mAuto ? 0 : p.margin))}px`,
-    marginRight: mAuto ? 'auto' : `${n(p.marginR || p.marginRight || p.margin)}px`,
-    marginBottom: `${n(p.marginB || p.marginBottom || (mAuto ? 0 : p.margin))}px`,
-    marginLeft: mAuto ? 'auto' : `${n(p.marginL || p.marginLeft || p.margin)}px`,
-    borderRadius: `${n(p.borderRadius || p.radius)}px`,
-    backgroundColor: p.background || p.backgroundColor || p.bgColor || 'transparent',
-    border: `${n(p.borderWidth || 0)}px ${p.borderStyle || 'solid'} ${p.borderColor || 'rgba(255,255,255,0.1)'}`,
-    boxShadow: p.shadow || 'none',
-    maxWidth: p.maxWidth || '100%',
+    paddingTop: `${paddingTop}px`,
+    paddingBottom: `${paddingBottom}px`,
+    paddingLeft: `${paddingLeft}px`,
+    paddingRight: `${paddingRight}px`,
+    marginTop: `${marginTop}px`,
+    marginBottom: `${marginBottom}px`,
+    borderRadius: `${p.borderRadius || 0}px`,
+    backgroundColor: p.background || 'transparent',
+    color: p.color || 'inherit',
     textAlign: p.textAlign || 'left',
+    display: 'flex',
+    flexDirection: (p.flexDirection || 'column') as any,
+    gap: `${p.gap || 0}px`,
   };
 };
 
-// 1. SECCIÓN
 export const Section = ({ children, ...p }: any) => {
-  const { connectors: { connect, drag }, selected, isHovered } = useNode((s) => ({ selected: s.events.selected, isHovered: s.events.hovered }));
+  const { connectors: { connect, drag }, selected } = useNode((s) => ({ selected: s.events.selected }));
   return (
-    <section ref={(r: any) => connect(drag(r))} style={{...getCommonStyles(p), width: '100%', minHeight: '100px', outline: selected ? '2px solid #3b82f6' : isHovered ? '1px solid #3b82f6' : '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '40px'}} className="relative transition-all overflow-hidden">
-      <div className="max-w-6xl mx-auto w-full flex flex-col gap-10 relative z-10">{children}</div>
+    <section 
+      ref={(r: any) => connect(drag(r))} 
+      style={{...getCommonStyles(p), minHeight: '80px'}} 
+      className={`relative w-full transition-all ${selected ? 'ring-2 ring-blue-500 ring-inset' : 'hover:outline hover:outline-1 hover:outline-blue-500/30'}`}
+    >
+      <div className="max-w-7xl mx-auto w-full h-full min-h-[40px]">
+        {children}
+        {React.Children.count(children) === 0 && (
+          <div className="py-10 text-center text-[10px] font-black uppercase tracking-[0.4em] text-white/5 border border-dashed border-white/10 rounded-xl">
+            Arquitectura_Vacia_Arrastra_Componentes
+          </div>
+        )}
+      </div>
     </section>
   );
 };
-Section.craft = { displayName: 'Sección', props: { padding: 80, background: '#050505' } };
+Section.craft = { displayName: 'Sección', props: { padding: 40, background: '#050505' } };
 
-// 2. GRID
 export const Grid = ({ children, ...p }: any) => {
-  const { connectors: { connect, drag }, isHovered } = useNode(s => ({ isHovered: s.events.hovered }));
-  const cols = p.cols || p.columns || 1;
+  const { connectors: { connect, drag }, selected } = useNode(s => ({ selected: s.events.selected }));
   return (
-    <div ref={(r: any) => connect(drag(r))} style={{ ...getCommonStyles(p), display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: `${p.gap || 32}px`, outline: isHovered ? '1px dashed #3b82f6' : '1px dashed rgba(255,255,255,0.05)' }} className="w-full">{children}</div>
-  );
-};
-Grid.craft = { displayName: 'Cuadrícula', props: { cols: 2, gap: 32 } };
-
-// 3. BOX
-export const Box = ({ children, ...p }: any) => {
-  const { connectors: { connect, drag }, isHovered } = useNode(s => ({ isHovered: s.events.hovered }));
-  return (
-    <div ref={(r: any) => connect(drag(r))} style={{...getCommonStyles(p), display: 'flex', flexDirection: p.flexDirection || 'column', alignItems: p.alignItems || 'stretch', justifyContent: p.justifyContent || 'flex-start', gap: `${p.gap || 16}px`, outline: isHovered ? '1px dotted #3b82f6' : 'none'}} className="w-full">{children}</div>
-  );
-};
-Box.craft = { displayName: 'Contenedor', props: { padding: 20 } };
-
-// 4. TEXTO
-export const Text = ({ text, fontSize, color, bold, fontWeight, textAlign, ...p }: any) => {
-  const { connectors: { connect, drag } } = useNode();
-  const n = (v: any) => typeof v === 'string' ? parseInt(v.replace('px','')) : (v || 16);
-  const isBold = bold === true || bold === 'true' || fontWeight === 'bold' || fontWeight === '800' || fontWeight === 800;
-  return (
-    <div ref={(r: any) => connect(drag(r))} style={getCommonStyles(p)} className="w-full flex">
-      <p style={{ fontSize: `${n(fontSize)}px`, color: color || '#fff', fontWeight: isBold ? '800' : '400', textAlign: textAlign || 'left', lineHeight: '1.2', margin: 0, letterSpacing: isBold && n(fontSize) > 30 ? '-0.03em' : 'normal', width: '100%' }}>{text}</p>
-    </div>
-  );
-};
-Text.craft = { displayName: 'Texto', props: { text: 'Nuevo Texto', fontSize: 16 } };
-
-// 5. BOTÓN
-export const Button = ({ text, bgColor, color, ...p }: any) => {
-  const { connectors: { connect, drag } } = useNode();
-  return (
-    <div ref={(r: any) => connect(drag(r))} style={getCommonStyles(p)} className="inline-block">
-      <button style={{ backgroundColor: bgColor || p.background || '#fff', color: color || '#000' }} className="px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest pointer-events-none transition-all shadow-xl">{text}</button>
-    </div>
-  );
-};
-Button.craft = { displayName: 'Botón', props: { text: 'Botón', bgColor: '#fff', color: '#000', borderRadius: 100 } };
-
-// 6. IMAGEN (DROP-TO-UPLOAD)
-export const Image = ({ src, height, ...p }: any) => {
-  const { connectors: { connect, drag }, actions: { setProp } } = useNode();
-  const [up, setUp] = useState(false);
-  const n = (v: any) => typeof v === 'string' ? parseInt(v.replace('px','')) : (v || 300);
-  const handleDrop = async (e: any) => {
-    e.preventDefault(); const file = e.dataTransfer.files[0]; if (!file || !file.type.startsWith('image/')) return; setUp(true);
-    const fileName = `${Math.random()}.${file.name.split('.').pop()}`;
-    const { error } = await supabase.storage.from('site-assets').upload(`uploads/${fileName}`, file);
-    if (!error) { const { data } = supabase.storage.from('site-assets').getPublicUrl(`uploads/${fileName}`); setProp((p: any) => p.src = data.publicUrl); }
-    setUp(false);
-  };
-  return (
-    <div ref={(r: any) => connect(drag(r))} onDragOver={e => e.preventDefault()} onDrop={handleDrop} style={{...getCommonStyles(p), height: `${n(height)}px` }} className="w-full overflow-hidden border border-white/5 bg-[#111] relative flex items-center justify-center">
-      {up && <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-20"><Loader2 className="animate-spin text-white" /></div>}
-      {!src && !up && <UploadCloud className="text-white/10" size={32} />}
-      {src && <img src={src} className="w-full h-full object-cover pointer-events-none" />}
-    </div>
-  );
-};
-Image.craft = { displayName: 'Imagen', props: { height: 300, borderRadius: 24 } };
-
-// 7. VIDEO
-export const Video = ({ url, ...p }: any) => {
-  const { connectors: { connect, drag } } = useNode();
-  return (
-    <div ref={(r: any) => connect(drag(r))} style={getCommonStyles(p)} className="w-full aspect-video bg-black overflow-hidden border border-white/10 relative">
-      <iframe src={url || 'https://www.youtube.com/embed/dQw4w9WgXcQ'} className="w-full h-full pointer-events-none" frameBorder="0" />
-    </div>
-  );
-};
-Video.craft = { displayName: 'Video', props: { borderRadius: 12 } };
-
-// 8. CARRUSEL
-export const Carousel = ({ children, height, ...p }: any) => {
-  const { connectors: { connect, drag } } = useNode();
-  return (
-    <div ref={(r: any) => connect(drag(r))} style={{ ...getCommonStyles(p), height: `${typeof height === 'string' ? parseInt(height) : (height || 300)}px` }} className="w-full flex overflow-x-auto snap-x snap-mandatory gap-6 pb-6 no-scrollbar border border-white/5 border-dashed">
+    <div 
+      ref={(r: any) => connect(drag(r))} 
+      style={{ 
+        ...getCommonStyles(p), 
+        display: 'grid', 
+        gridTemplateColumns: `repeat(${p.cols || 2}, minmax(0, 1fr))`, 
+        gap: `${p.gap || 20}px` 
+      }} 
+      className={`w-full p-4 ${selected ? 'ring-2 ring-blue-500' : ''}`}
+    >
       {children}
     </div>
   );
 };
-Carousel.craft = { displayName: 'Carrusel', props: { height: 300 } };
+Grid.craft = { displayName: 'Grilla', props: { cols: 2, gap: 20 } };
 
-// 9. SERVICE CARD
-export const ServiceCard = ({ title, price, desc, description, image, ...p }: any) => {
-  const { connectors: { connect, drag } } = useNode();
-  const finalDesc = desc || description || 'Servicio Premium...';
+export const Text = ({ text, fontSize, color, ...p }: any) => {
+  const { connectors: { connect, drag }, selected } = useNode();
   return (
-    <div ref={(r: any) => connect(drag(r))} style={getCommonStyles(p)} className="bg-[#0f0f11] border border-white/10 p-8 rounded-[32px] w-full flex flex-col gap-4 group hover:border-blue-500/50 transition-all hover:-translate-y-2 shadow-2xl relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full"></div>
-      {image && <div className="h-40 bg-white/5 rounded-2xl overflow-hidden mb-2"><img src={image} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" /></div>}
-      <div className="flex justify-between items-start gap-4 relative z-10"><h3 className="text-xl font-black text-white uppercase italic tracking-tighter leading-none">{title || 'Servicio'}</h3><span className="text-blue-400 font-black text-lg bg-blue-500/10 px-3 py-1 rounded-lg">${price || '0'}</span></div>
-      <p className="text-white/40 text-xs leading-relaxed relative z-10">{finalDesc}</p>
-      <button className="w-full py-4 bg-white/5 text-white hover:bg-white hover:text-black rounded-xl text-[10px] font-black uppercase tracking-widest mt-auto transition-colors border border-white/10 relative z-10">Reservar_</button>
+    <div ref={(r: any) => connect(drag(r))} style={getCommonStyles(p)} className={selected ? 'ring-1 ring-blue-500' : ''}>
+      <p style={{ fontSize: `${fontSize || 16}px`, color: color || '#ffffff', margin: 0, fontWeight: p.bold ? '800' : '400' }}>{text}</p>
     </div>
   );
 };
-ServiceCard.craft = { displayName: 'Tarjeta Servicio', props: { title: '', price: '', desc: '', image: '' } };
+Text.craft = { displayName: 'Texto', props: { text: 'Nuevo Texto', fontSize: 16, color: '#ffffff' } };
 
-// --- BLOQUES PRE-CONSTRUIDOS (LIBRERÍA) ---
-
-export const HeroBlock = ({ title, subtitle, buttonText, ...p }: any) => {
-  const { connectors: { connect, drag } } = useNode();
-  const isDark = p.theme === 'dark';
+export const Button = ({ text, ...p }: any) => {
+  const { connectors: { connect, drag }, selected } = useNode();
   return (
-    <div ref={(r: any) => connect(drag(r))} className={`w-full py-24 px-10 flex flex-col items-center text-center gap-6 ${isDark ? 'bg-[#050505] text-white' : 'bg-white text-black'} ${p.borderRadius ? `rounded-[${p.borderRadius}px]` : ''}`}>
-      <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-none">{title || 'Título Impactante'}</h1>
-      <p className="max-w-2xl text-lg opacity-60 font-medium">{subtitle || 'Describe tu propuesta de valor de forma clara y directa.'}</p>
-      <button className={`px-10 py-5 rounded-full font-black uppercase text-xs tracking-widest transition-all ${isDark ? 'bg-blue-600 text-white hover:bg-blue-500' : 'bg-black text-white hover:scale-105'}`}>
-        {buttonText || 'Empezar ahora'}
+    <div ref={(r: any) => connect(drag(r))} style={{...getCommonStyles(p), width: 'auto'}} className="inline-block p-1">
+      <button 
+        style={{ backgroundColor: p.background || '#2563eb', color: p.color || '#ffffff', borderRadius: `${p.borderRadius || 8}px` }} 
+        className={`px-8 py-3 font-black uppercase text-[10px] tracking-widest border-none ${selected ? 'ring-2 ring-white' : ''}`}
+      >
+        {text}
       </button>
     </div>
   );
 };
-HeroBlock.craft = { displayName: 'Bloque Hero', props: { title: '', subtitle: '', buttonText: '', theme: 'dark' } };
+Button.craft = { displayName: 'Botón', props: { text: 'ACCIÓN', background: '#2563eb', color: '#ffffff', borderRadius: 8 } };
 
-export const FeaturesBlock = ({ title, features, ...p }: any) => {
-  const { connectors: { connect, drag } } = useNode();
-  const list = features || [{t: 'Rápido', d: 'Velocidad extrema'}, {t: 'Seguro', d: 'Protección total'}, {t: 'Fácil', d: 'Sin complicaciones'}];
+export const Image = ({ src, ...p }: any) => {
+  const { connectors: { connect, drag }, selected } = useNode();
+  const openPicker = () => { if ((window as any).openMediaPicker) (window as any).openMediaPicker((url: string) => (window as any).setProp('src', url)); };
   return (
-    <div ref={(r: any) => connect(drag(r))} className="w-full py-20 px-10 flex flex-col gap-12 bg-transparent">
-      <h2 className="text-3xl font-black uppercase italic tracking-tighter text-center">{title || 'Nuestras Ventajas'}</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {list.map((f: any, i: number) => (
-          <div key={i} className="p-8 border border-white/5 bg-white/5 rounded-[32px] flex flex-col gap-3">
-            <h3 className="font-black uppercase text-blue-500">{f.t}</h3>
-            <p className="text-sm opacity-40">{f.d}</p>
-          </div>
-        ))}
-      </div>
+    <div ref={(r: any) => connect(drag(r))} onClick={openPicker} style={{...getCommonStyles(p), height: `${p.height || 300}px` }} className={`overflow-hidden flex items-center justify-center bg-[#111] cursor-pointer ${selected ? 'ring-2 ring-blue-500' : ''}`}>
+      {!src ? <UploadCloud className="text-white/10" size={32} /> : <img src={src} className="w-full h-full object-cover pointer-events-none" />}
     </div>
   );
 };
-FeaturesBlock.craft = { displayName: 'Bloque Características', props: { title: '', features: [] } };
+Image.craft = { displayName: 'Imagen', props: { height: 300, borderRadius: 12 } };
+
+export const HeroBlock = ({ title, subtitle, buttonText, ...p }: any) => {
+  const { connectors: { connect, drag }, selected } = useNode();
+  return (
+    <div ref={(r: any) => connect(drag(r))} style={getCommonStyles(p)} className={`text-center py-20 px-10 ${selected ? 'ring-2 ring-blue-500' : ''}`}>
+      <h1 style={{ fontSize: `${p.titleSize || 64}px` }} className="font-black italic uppercase tracking-tighter mb-4">{title}</h1>
+      <p style={{ fontSize: `${p.subSize || 18}px` }} className="opacity-40 max-w-2xl mx-auto mb-8">{subtitle}</p>
+      <button style={{ background: p.primaryColor || '#2563eb', borderRadius: '100px' }} className="px-10 py-4 font-black uppercase text-xs tracking-widest">{buttonText}</button>
+    </div>
+  );
+};
+HeroBlock.craft = { displayName: 'Hero', props: { title: 'TÍTULO_MAESTRO', subtitle: 'Descripción técnica.', buttonText: 'EMPEZAR', titleSize: 64, subSize: 18 } };
+
+export const Box = ({ children, ...p }: any) => {
+  const { connectors: { connect, drag }, selected } = useNode(s => ({ selected: s.events.selected }));
+  return (
+    <div ref={(r: any) => connect(drag(r))} style={getCommonStyles(p)} className={`min-h-[40px] w-full ${selected ? 'ring-2 ring-blue-500' : 'border border-dashed border-white/5'}`}>
+      {children}
+    </div>
+  );
+};
+Box.craft = { displayName: 'Caja', props: { padding: 20 } };
+
+export const Carousel = ({ children, ...p }: any) => {
+  const { connectors: { connect, drag } } = useNode();
+  return <div ref={(r: any) => connect(drag(r))} style={getCommonStyles(p)} className="flex overflow-x-auto gap-4 p-4">{children}</div>;
+};
+Carousel.craft = { displayName: 'Carrusel', props: { padding: 20 } };
+
+export const ServiceCard = ({ title, price, ...p }: any) => {
+  const { connectors: { connect, drag }, selected } = useNode();
+  return (
+    <div ref={(r: any) => connect(drag(r))} style={getCommonStyles(p)} className={`bg-white/5 border border-white/10 p-8 rounded-3xl ${selected ? 'ring-2 ring-blue-500' : ''}`}>
+      <h3 className="text-xl font-black italic uppercase text-blue-500 mb-2">{title}</h3>
+      <div className="text-2xl font-black mb-4">${price}</div>
+    </div>
+  );
+};
+ServiceCard.craft = { displayName: 'Servicio', props: { title: 'Servicio', price: '99' } };
+
+export const Video = ({ url, ...p }: any) => {
+  const { connectors: { connect, drag } } = useNode();
+  return (
+    <div ref={(r: any) => connect(drag(r))} style={getCommonStyles(p)} className="aspect-video bg-black rounded-2xl overflow-hidden">
+      <iframe src={url || 'https://www.youtube.com/embed/dQw4w9WgXcQ'} className="w-full h-full pointer-events-none" />
+    </div>
+  );
+};
+Video.craft = { displayName: 'Video', props: { url: '' } };
+
+export const FeaturesBlock = ({ title, ...p }: any) => {
+  const { connectors: { connect, drag } } = useNode();
+  return (
+    <div ref={(r: any) => connect(drag(r))} style={getCommonStyles(p)} className="py-20 text-center">
+       <h2 className="text-3xl font-black uppercase italic mb-10">{title}</h2>
+       <div className="grid grid-cols-3 gap-8 px-10">
+          {[1,2,3].map(i => <div key={i} className="p-10 bg-white/5 rounded-[32px] border border-white/5 text-white font-bold uppercase italic">Ventaja_{i}</div>)}
+       </div>
+    </div>
+  );
+};
+FeaturesBlock.craft = { displayName: 'Características', props: { title: 'VENTAJAS' } };

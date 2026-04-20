@@ -29,29 +29,32 @@ export const AIGenerator = ({ tenantId }: { tenantId: string }) => {
     try {
       const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
       const systemPrompt = `
-        Eres un Diseñador UI/UX Senior. Tu misión es usar nuestra LIBRERÍA DE BLOQUES para crear sitios web.
-        
-        REGLA DE ORO: USA ÚNICAMENTE los componentes listados en "BIBLIOTECA".
-        Si inventas un componente (como Navbar, Footer, Hero), el sistema explotará. No lo hagas.
+        Eres STUDIO_ENGINE AI, un arquitecto de interfaces especializado en diseño INDUSTRIAL y CYBERPUNK.
+        Tu misión es construir estructuras JSON para Craft.js utilizando una biblioteca estrictamente definida.
 
-        BIBLIOTECA DE BLOQUES (resolvedName):
-        1. HeroBlock: Bloque principal. Props: { title, subtitle, buttonText, theme: "dark"|"light" }
-        2. FeaturesBlock: Características. Props: { title, features: [{t: string, d: string}] }
-        3. Section: Contenedor para otros elementos.
-        4. Grid: Rejilla. Props: { cols: number }
-        5. Text: Texto simple.
-        6. Image: Imagen.
-        7. ServiceCard: Tarjeta individual.
+        FILOSOFÍA DE DISEÑO:
+        - Estética: Minimalista, colores oscuros con acentos neón, bordes definidos.
+        - Tono: Profesional, técnico, directo.
+        - Tipografía: Inter o fuentes Sans-Serif modernas.
 
-        INSTRUCCIONES DE ESTILO:
-        - Para algo "AMIGABLE": Usa HeroBlock con theme: "light" y textos cálidos.
-        - Para algo "TECH": Usa HeroBlock con theme: "dark" y textos potentes.
+        BIBLIOTECA DE BLOQUES PERMITIDOS (resolvedName):
+        1. HeroBlock: { title: string, subtitle: string, buttonText: string, theme: "dark" }
+        2. FeaturesBlock: { title: string, features: Array<{t: string, d: string}> }
+        3. ServiceCard: { title: string, price: string, desc: string, image?: string }
+        4. Text: { text: string, fontSize: number, bold: boolean, center?: boolean }
+        5. Button: { text: string, bgColor: string, color: string }
+        6. Image: { src: string, height: number }
+        7. Section: El contenedor raíz indispensable.
+        8. Grid: { cols: number }
+        9. Box: Contenedor flexible.
 
-        ESTRUCTURA JSON:
-        {"ROOT": {"type": {"resolvedName": "Section"}, "isCanvas": true, "props": {}, "nodes": ["n1"], "parent": null}, ...}
+        ESTRUCTURA DE RESPUESTA:
+        Debes responder ÚNICAMENTE con el objeto JSON de Craft.js. 
+        Raíz siempre: "ROOT" (Section).
+        Ejemplo de nodo: "node-id": {"type": {"resolvedName": "HeroBlock"}, "isCanvas": false, "props": {...}, "nodes": [], "parent": "ROOT"}
       `;
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ contents: [{ parts: [{ text: `${systemPrompt}\n\nDiseña: ${prompt}` }] }] })
@@ -112,19 +115,37 @@ export const AIGenerator = ({ tenantId }: { tenantId: string }) => {
             </div>
           </header>
 
-          <textarea placeholder="Describe tu visión técnica..." className="flex-1 w-full bg-white/[0.02] border border-white/5 p-8 rounded-[40px] outline-none focus:border-blue-500 font-medium text-white mb-8 transition-all resize-none text-lg placeholder:text-white/10" value={prompt} onChange={(e) => setPrompt(e.target.value)} />
+          <textarea 
+            placeholder="Describe tu visión técnica (ej: Un landing para una barbería futurista con tonos neón)..." 
+            className="flex-1 w-full bg-white/[0.02] border border-white/5 p-8 rounded-[32px] outline-none focus:border-blue-500 font-medium text-white mb-8 transition-all resize-none text-lg placeholder:text-white/10" 
+            value={prompt} 
+            onChange={(e) => setPrompt(e.target.value)} 
+          />
 
           {debugInfo && (
-            <div className={`mb-8 p-5 border rounded-3xl flex items-center gap-4 text-xs font-bold uppercase tracking-widest ${debugInfo.startsWith('ERROR') ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
+            <div className={`mb-8 p-5 border rounded-2xl flex items-center gap-4 text-xs font-bold uppercase tracking-widest ${debugInfo.startsWith('ERROR') ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
               {debugInfo.startsWith('ERROR') ? <AlertTriangle size={18} /> : <Cpu size={18} />}
               {debugInfo}
             </div>
           )}
 
-          <button onClick={generateSite} disabled={loading || credits <= 0} className="w-full bg-white text-black p-8 rounded-3xl font-black uppercase text-sm tracking-[0.4em] flex items-center justify-center gap-4 hover:bg-blue-600 hover:text-white transition-all disabled:opacity-50 active:scale-95 shadow-xl">
-            {loading ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />} 
-            {loading ? 'PROCESANDO...' : 'DESPLEGAR_SISTEMA_IA'}
-          </button>
+          {/* BARRA DE ACCIONES FINAL */}
+          <footer className="flex gap-4 pt-6 border-t border-white/5">
+            <button 
+              onClick={() => setIsOpen(false)} 
+              className="flex-1 py-4 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] text-white/20 hover:text-white hover:bg-white/5 transition-all border border-white/5"
+            >
+              CANCELAR_X
+            </button>
+            <button 
+              onClick={generateSite} 
+              disabled={loading || credits <= 0 || !prompt} 
+              className="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-blue-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20"
+            >
+              {loading ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />} 
+              {loading ? 'PROCESANDO_NÚCLEO...' : 'CONFIRMAR_Y_GENERAR'}
+            </button>
+          </footer>
         </div>
       </div>
     </div>

@@ -1,8 +1,38 @@
 import React, { useState } from 'react';
 import { useEditor } from '@craftjs/core';
-import { Palette, Maximize, Settings, Trash2, MousePointer2, Droplets, Square } from 'lucide-react';
+import { 
+  Palette, Maximize, Settings, Trash2, AlignLeft, AlignCenter, AlignRight, 
+  Smartphone, Monitor, ChevronRight
+} from 'lucide-react';
 
-export const SettingsPanel = () => {
+const ControlGroup = ({ title, children }: any) => (
+  <div className="space-y-4 border-b border-white/5 pb-8 mb-8">
+    <p className="text-[9px] font-black text-blue-500 uppercase tracking-[0.3em] italic">{title}_</p>
+    {children}
+  </div>
+);
+
+const PropertyInput = ({ label, value, onChange, type = "text" }: any) => (
+  <div className="space-y-2">
+    <label className="text-[8px] font-black text-white/30 uppercase tracking-widest">{label}</label>
+    {type === "textarea" ? (
+      <textarea 
+        className="w-full bg-white/[0.02] border border-white/10 p-3 rounded-lg text-xs text-white outline-none focus:border-blue-500 resize-none h-24"
+        value={value || ''}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    ) : (
+      <input 
+        type={type}
+        className="w-full bg-white/[0.02] border border-white/10 p-3 rounded-lg text-xs text-white outline-none focus:border-blue-500"
+        value={value || ''}
+        onChange={(e) => onChange(type === "number" ? parseInt(e.target.value) : e.target.value)}
+      />
+    )}
+  </div>
+);
+
+export const SettingsPanel = ({ theme, setTheme }: { theme?: any, setTheme?: any }) => {
   const { actions, selected, isEnabled } = useEditor((state, query) => {
     const [currentNodeId] = state.events.selected;
     let selected;
@@ -10,19 +40,29 @@ export const SettingsPanel = () => {
       selected = {
         id: currentNodeId,
         name: state.nodes[currentNodeId].data.displayName || state.nodes[currentNodeId].data.name,
-        isDeletable: query.node(currentNodeId).isDeletable(),
         props: state.nodes[currentNodeId].data.props,
+        isDeletable: query.node(currentNodeId).isDeletable(),
       };
     }
     return { selected, isEnabled: state.options.enabled };
   });
 
-  const [activeTab, setActiveTab] = useState('style');
-
-  if (!isEnabled || !selected) return (
-    <div className="h-full flex flex-col items-center justify-center p-12 text-center opacity-30">
-       <MousePointer2 size={32} className="mb-4" />
-       <p className="text-xs font-black uppercase tracking-[0.3em]">Seleccionar_Elemento</p>
+  if (!selected) return (
+    <div className="h-full flex flex-col bg-[#0a0a0a]">
+       <header className="p-8 border-b border-white/5">
+        <h2 className="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-2 italic">Global_Control</h2>
+        <p className="text-2xl font-black italic text-white uppercase tracking-tighter">Site Theme</p>
+      </header>
+      <div className="p-8 space-y-8 overflow-y-auto custom-scrollbar">
+        <ControlGroup title="Colores_Maestros">
+          <PropertyInput type="color" label="Color Primario" value={theme?.primaryColor} onChange={(v:any) => setTheme({...theme, primaryColor: v})} />
+          <PropertyInput type="color" label="Fondo Global" value={theme?.backgroundColor} onChange={(v:any) => setTheme({...theme, backgroundColor: v})} />
+          <PropertyInput type="color" label="Texto Global" value={theme?.textColor} onChange={(v:any) => setTheme({...theme, textColor: v})} />
+        </ControlGroup>
+        <ControlGroup title="Geometría">
+          <PropertyInput type="number" label="Radio de Bordes (PX)" value={theme?.borderRadius} onChange={(v:any) => setTheme({...theme, borderRadius: v})} />
+        </ControlGroup>
+      </div>
     </div>
   );
 
@@ -30,82 +70,50 @@ export const SettingsPanel = () => {
     actions.setProp(selected.id, (props: any) => props[prop] = value);
   };
 
-  const TabButton = ({ id, icon: Icon, label }: any) => (
-    <button onClick={() => setActiveTab(id)} className={`flex-1 flex flex-col items-center gap-2 py-4 border-b-2 transition-all ${activeTab === id ? 'border-blue-500 text-blue-500 bg-blue-500/5' : 'border-transparent text-white/20'}`}>
-      <Icon size={16} />
-      <span className="text-[10px] font-black uppercase tracking-widest">{label}</span>
-    </button>
-  );
-
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0a]">
-      <header className="p-6 border-b border-white/5 bg-white/[0.01]">
-        <p className="text-xs font-black text-blue-500 uppercase tracking-widest mb-1 italic">Propiedades_</p>
-        <p className="text-lg font-black italic uppercase text-white truncate">{selected.name}</p>
+    <div className="h-full flex flex-col bg-[#0a0a0a] animate-in slide-in-from-right duration-300">
+      <header className="p-8 border-b border-white/10 bg-blue-600/5">
+        <div className="flex justify-between items-center mb-4">
+           <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+              <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">Editando_Nodo</span>
+           </div>
+           {selected.isDeletable && (
+             <button onClick={() => actions.delete(selected.id)} className="p-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><Trash2 size={14} /></button>
+           )}
+        </div>
+        <h2 className="text-2xl font-black italic text-white uppercase tracking-tighter truncate">{selected.name}</h2>
       </header>
-      <div className="flex border-b border-white/5">
-        <TabButton id="style" icon={Palette} label="Estilo" />
-        <TabButton id="layout" icon={Maximize} label="Espacio" />
-        <TabButton id="content" icon={Settings} label="Config" />
-      </div>
-      <div className="flex-1 overflow-y-auto p-6 space-y-10 custom-scrollbar">
-        {activeTab === 'style' && (
-          <>
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <label className="text-white/40 uppercase mb-2 block font-black text-[9px]">Fondo</label>
-                <input type="color" className="w-full h-10 rounded-xl bg-transparent border border-white/10 cursor-pointer" value={selected.props.background || '#000000'} onChange={e => setProp('background', e.target.value)} />
-              </div>
-              {selected.props.color && (
-                <div>
-                  <label className="text-white/40 uppercase mb-2 block font-black text-[9px]">Texto</label>
-                  <input type="color" className="w-full h-10 rounded-xl bg-transparent border border-white/10 cursor-pointer" value={selected.props.color || '#ffffff'} onChange={e => setProp('color', e.target.value)} />
-                </div>
-              )}
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <label className="text-white/40 uppercase font-black text-[9px]">Redondeado</label>
-                <span className="text-[10px] font-mono text-blue-500">{selected.props.borderRadius}px</span>
-              </div>
-              <input type="range" min="0" max="100" className="w-full accent-blue-600" value={selected.props.borderRadius || 0} onChange={e => setProp('borderRadius', parseInt(e.target.value))} />
-            </div>
-          </>
+
+      <div className="flex-1 overflow-y-auto p-8 space-y-2 custom-scrollbar pb-32">
+        {/* EDITAR TEXTOS (DINÁMICO) */}
+        <ControlGroup title="Contenido_Visual">
+          {selected.props.text !== undefined && <PropertyInput type="textarea" label="Texto Principal" value={selected.props.text} onChange={(v:any) => setProp('text', v)} />}
+          {selected.props.title !== undefined && <PropertyInput type="text" label="Título" value={selected.props.title} onChange={(v:any) => setProp('title', v)} />}
+          {selected.props.subtitle !== undefined && <PropertyInput type="textarea" label="Subtítulo" value={selected.props.subtitle} onChange={(v:any) => setProp('subtitle', v)} />}
+          {selected.props.buttonText !== undefined && <PropertyInput type="text" label="Texto Botón" value={selected.props.buttonText} onChange={(v:any) => setProp('buttonText', v)} />}
+        </ControlGroup>
+
+        {/* TIPOGRAFÍA Y ESTILO */}
+        {(selected.props.fontSize !== undefined || selected.props.background !== undefined) && (
+          <ControlGroup title="Apariencia_Tecnica">
+            {selected.props.fontSize !== undefined && <PropertyInput type="number" label="Tamaño Fuente" value={selected.props.fontSize} onChange={(v:any) => setProp('fontSize', v)} />}
+            {selected.props.background !== undefined && <PropertyInput type="color" label="Color Fondo" value={selected.props.background} onChange={(v:any) => setProp('background', v)} />}
+            {selected.props.color !== undefined && <PropertyInput type="color" label="Color Texto" value={selected.props.color} onChange={(v:any) => setProp('color', v)} />}
+            {selected.props.borderRadius !== undefined && <PropertyInput type="number" label="Bordes (PX)" value={selected.props.borderRadius} onChange={(v:any) => setProp('borderRadius', v)} />}
+          </ControlGroup>
         )}
-        {activeTab === 'layout' && (
-           <div className="grid grid-cols-2 gap-x-6 gap-y-8">
-              {['T', 'B', 'L', 'R'].map(dir => (
-                <div key={dir}>
-                  <label className="text-white/40 uppercase mb-2 block font-black text-[9px]">Padding {dir}</label>
-                  <input type="number" className="w-full bg-white/5 border border-white/5 p-3 rounded-xl text-xs font-bold text-white outline-none focus:border-blue-500" value={selected.props[`padding${dir}`] || 0} onChange={e => setProp(`padding${dir}`, parseInt(e.target.value))} />
-                </div>
-              ))}
+
+        {/* ESPACIADO (PADDING/MARGIN) */}
+        <ControlGroup title="Arquitectura_Espacial">
+           <div className="grid grid-cols-2 gap-4">
+              <PropertyInput type="number" label="Padding Top" value={selected.props.paddingTop || selected.props.padding || 0} onChange={(v:any) => setProp('paddingTop', v)} />
+              <PropertyInput type="number" label="Padding Bottom" value={selected.props.paddingBottom || selected.props.padding || 0} onChange={(v:any) => setProp('paddingBottom', v)} />
+              <PropertyInput type="number" label="Margin Top" value={selected.props.marginTop || selected.props.margin || 0} onChange={(v:any) => setProp('marginTop', v)} />
+              <PropertyInput type="number" label="Margin Bottom" value={selected.props.marginBottom || selected.props.margin || 0} onChange={(v:any) => setProp('marginBottom', v)} />
            </div>
-        )}
-        {activeTab === 'content' && (
-           <div className="space-y-8">
-              {selected.props.text !== undefined && (
-                <div>
-                  <label className="text-white/40 uppercase mb-2 block font-black text-[9px]">Contenido</label>
-                  <textarea className="w-full bg-white/5 border border-white/5 p-4 rounded-2xl text-sm font-medium text-white h-40 outline-none focus:border-blue-500 resize-none" value={selected.props.text} onChange={(e) => setProp('text', e.target.value)} />
-                </div>
-              )}
-              {selected.props.src !== undefined && (
-                <div>
-                  <label className="text-white/40 uppercase mb-2 block font-black text-[9px]">URL Imagen</label>
-                  <input className="w-full bg-white/5 border border-white/5 p-3 rounded-xl text-xs text-white focus:border-blue-500 outline-none" value={selected.props.src} onChange={(e) => setProp('src', e.target.value)} />
-                </div>
-              )}
-           </div>
-        )}
+        </ControlGroup>
       </div>
-      <footer className="p-6 border-t border-white/5">
-        {selected.isDeletable && (
-          <button onClick={() => actions.delete(selected.id)} className="w-full py-4 bg-red-500/10 text-red-500 rounded-2xl text-[10px] font-black uppercase hover:bg-red-500 hover:text-white transition-all border border-red-500/10 flex items-center justify-center gap-2">
-            <Trash2 size={14} /> Eliminar_Componente
-          </button>
-        )}
-      </footer>
     </div>
   );
 };
